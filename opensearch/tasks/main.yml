@@ -1,0 +1,57 @@
+---
+# tasks file for opensearch
+- name: Install opensearch on debian
+  when: ansible_os_family == "Debian"
+  include_tasks: debian.yml
+- name: Install opensearch on redhat
+  when: ansible_os_family == "RedHat"
+  include_tasks: redhat.yml  
+- name: Create opensearch user
+  user:
+    name: "{{ os_user }}"
+    state: present
+    shell: /bin/false
+    create_home: true
+    home: "{{ os_home }}"
+- name: Create home directory
+  file:
+    path: "{{ os_home }}"
+    state: directory
+    owner: "{{ os_user }}"
+    group: "{{ os_user }}"
+- name: Extract the tar file
+  command: 
+    chdir=/tmp/ tar -xvzf opensearch.tar.gz -C "{{ os_home }}" --strip-components=1  
+- name: Set max map count to sysctl.conf
+  shell: 
+    cmd: echo vm.max_map_count=262144 >> /etc/sysctl.conf
+  notify: 
+    - reload systemd configuration
+    - restart kernel parameter
+- name: OpenSearch Install | Copy jvm.options File for Instance
+  template:
+    src: jvm.options
+    dest: "{{os_conf_dir}}/jvm.options"
+    owner: "{{ os_user }}"
+    group: "{{ os_user }}"
+    mode: 0644
+    force: yes     
+- name: dOpenSearch Install | Copy Configuration File
+  template:
+    src: opensearch.yml
+    dest: "{{os_conf_dir}}/opensearch.yml"
+    owner: "{{ os_user }}"
+    group: "{{ os_user }}"
+    mode: 0644
+    backup: yes
+  notify: 
+    - reload systemd configuration
+    - restart opensearch
+- name: OpenSearch Install | create systemd service
+  template:
+    src: opensearch.service
+    dest: "{{ systemctl_path }}/opensearch.service"    
+  notify: 
+    - reload systemd configuration
+    - restart opensearch
+

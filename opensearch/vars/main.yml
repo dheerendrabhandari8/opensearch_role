@@ -1,0 +1,10 @@
+---
+# vars file for opensearch
+os_version: 2.4.0
+os_download_url: https://artifacts.opensearch.org/releases/bundle/opensearch
+os_user: opensearch
+os_home: /usr/share/opensearch
+os_conf_dir: /usr/share/opensearch/config
+xmx_value: 2
+xms_value: 2
+systemctl_path: /etc/systemd/system

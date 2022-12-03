@@ -1,0 +1,16 @@
+---
+# handlers file for install_opensearch
+- name: reload systemd configuration
+  become: true
+  command: systemctl daemon-reload
+
+# Restart kernel parameter
+- name: restart kernel parameter
+  shell:
+    cmd: sudo sysctl -p
+
+
+# Restart service and ensure it is enabled
+
+- name: restart opensearch
+  systemd: name=opensearch state=restarted enabled=yes
